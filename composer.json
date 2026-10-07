@@ -1,0 +1,42 @@
+{
+    "name": "lumoauth/lumoauth",
+    "description": "Official LumoAuth PHP SDK — RBAC / ReBAC / ABAC checks, agent identity, JIT permissions, AAuth request signing. Framework integrations: lumoauth/symfony-bundle, lumoauth/laravel.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["lumoauth", "auth", "oauth", "oidc", "agents", "mcp", "authorization", "zanzibar", "abac"],
+    "homepage": "https://lumoauth.dev",
+    "support": {
+        "issues": "https://github.com/lumoauth/sdk-php/issues",
+        "docs": "https://docs.lumoauth.dev/developer/sdks#php"
+    },
+    "require": {
+        "php": "^8.1",
+        "ext-json": "*",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.1 || ^2.0",
+        "php-http/discovery": "^1.19"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5 || ^11.0",
+        "nyholm/psr7": "^1.8"
+    },
+    "suggest": {
+        "ext-sodium": "Required for AAuth request signing (Ed25519)",
+        "guzzlehttp/guzzle": "A PSR-18 client + PSR-17 factories the SDK discovers automatically",
+        "lumoauth/api-client": "The generated client for the full REST surface, exposed as LumoAuth::api()"
+    },
+    "autoload": {
+        "psr-4": { "LumoAuth\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "LumoAuth\\Tests\\": "tests/" }
+    },
+    "config": {
+        "allow-plugins": { "php-http/discovery": true },
+        "sort-packages": true
+    },
+    "extra": {
+        "lumoauth": { "min_server_api": "1.0.0", "contract": "sdk-contract@1" }
+    }
+}
