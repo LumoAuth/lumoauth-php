@@ -11,7 +11,19 @@ use LumoAuth\Routes;
 final class Auth
 {
     public const TOKEN_EXCHANGE_GRANT = 'urn:ietf:params:oauth:grant-type:token-exchange';
+    /**
+     * RFC 8693 subject_token_type / actor_token_type values (sdk-contract/token-types.json).
+     * The server checks the token against the declared type and answers a mismatch
+     * with invalid_grant. ACCESS_TOKEN_TYPE (default): an opaque or at+jwt access token;
+     * JWT_TOKEN_TYPE: an at+jwt access token or an external workload identity token;
+     * ID_TOKEN_TYPE: an OpenID Connect ID token issued to the exchanging client;
+     * REFRESH_TOKEN_TYPE: a refresh token issued to the exchanging client. JIT permission
+     * tokens, logout tokens and other special-purpose JWTs are never accepted under any type.
+     */
     public const ACCESS_TOKEN_TYPE = 'urn:ietf:params:oauth:token-type:access_token';
+    public const JWT_TOKEN_TYPE = 'urn:ietf:params:oauth:token-type:jwt';
+    public const ID_TOKEN_TYPE = 'urn:ietf:params:oauth:token-type:id_token';
+    public const REFRESH_TOKEN_TYPE = 'urn:ietf:params:oauth:token-type:refresh_token';
 
     public function __construct(private readonly HttpClient $http)
     {
@@ -91,13 +103,24 @@ final class Auth
         return $this->tokenRequest($data);
     }
 
-    /** RFC 8693 token exchange. @param list<string>|null $scopes @return array<string, mixed> */
-    public function tokenExchange(string $subjectToken, ?string $actorToken = null, ?string $audience = null, ?array $scopes = null): array
-    {
-        $data = ['grant_type' => self::TOKEN_EXCHANGE_GRANT, 'subject_token' => $subjectToken, 'subject_token_type' => self::ACCESS_TOKEN_TYPE];
+    /**
+     * RFC 8693 token exchange. $subjectTokenType / $actorTokenType declare what kind of
+     * token is being exchanged (one of the *_TOKEN_TYPE constants, default ACCESS_TOKEN_TYPE).
+     *
+     * @param list<string>|null $scopes @return array<string, mixed>
+     */
+    public function tokenExchange(
+        string $subjectToken,
+        ?string $actorToken = null,
+        ?string $audience = null,
+        ?array $scopes = null,
+        string $subjectTokenType = self::ACCESS_TOKEN_TYPE,
+        string $actorTokenType = self::ACCESS_TOKEN_TYPE,
+    ): array {
+        $data = ['grant_type' => self::TOKEN_EXCHANGE_GRANT, 'subject_token' => $subjectToken, 'subject_token_type' => $subjectTokenType];
         if ($actorToken) {
             $data['actor_token'] = $actorToken;
-            $data['actor_token_type'] = self::ACCESS_TOKEN_TYPE;
+            $data['actor_token_type'] = $actorTokenType;
         }
         if ($audience) {
             $data['audience'] = $audience;

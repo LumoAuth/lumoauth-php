@@ -34,7 +34,7 @@ $lumo = new LumoAuth(tokenProvider: fn () => $session->get('access_token'));
 | `jit` | `$lumo->jit->createTask(...)`, `request($taskId, $authorizationDetails)`, `token($requestId)` |
 | `mcp` | `$lumo->mcp->getToken('urn:mcp:finance')` |
 | `delegation` | `$lumo->delegation->exchange($subjectToken, $actorToken)`, `Delegation::parseActorChain($jwt)` |
-| `auth` | `$lumo->auth->authorizationUrl(...)`, `exchangeCode(...)`, `clientCredentials(...)`, `userinfo()` |
+| `auth` | `$lumo->auth->authorizationUrl(...)`, `exchangeCode(...)`, `clientCredentials(...)`, `tokenExchange($subjectToken, ..., subjectTokenType: Auth::ACCESS_TOKEN_TYPE, actorTokenType: Auth::ACCESS_TOKEN_TYPE)`, `userinfo()`. The RFC 8693 types are `Auth::ACCESS_TOKEN_TYPE` (default), `Auth::JWT_TOKEN_TYPE` (at+jwt access token or external workload JWT), `Auth::ID_TOKEN_TYPE` (OpenID Connect ID token) and `Auth::REFRESH_TOKEN_TYPE`; the server refuses a token that does not match its declared type. |
 
 ## Errors
 

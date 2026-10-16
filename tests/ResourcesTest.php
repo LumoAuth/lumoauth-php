@@ -118,6 +118,23 @@ final class ResourcesTest extends TestCase
         self::assertSame('Bearer explicit', $this->fake->last()->getHeaderLine('Authorization'));
     }
 
+    public function testTokenExchangeDeclaresTheTokenTypes(): void
+    {
+        $lumo = $this->client();
+        $this->fake->queue(200, ['access_token' => 'x'])->queue(200, ['access_token' => 'y']);
+
+        $lumo->auth->tokenExchange('subject', 'actor', 'urn:mcp:x', ['read']);
+        parse_str((string) $this->fake->last()->getBody(), $form);
+        self::assertSame(\LumoAuth\Resource\Auth::ACCESS_TOKEN_TYPE, $form['subject_token_type'], 'access_token is the default');
+        self::assertSame(\LumoAuth\Resource\Auth::ACCESS_TOKEN_TYPE, $form['actor_token_type']);
+
+        // An ID token (or workload JWT) is declared as such; the actor default stays access_token.
+        $lumo->auth->tokenExchange('id-token', 'actor', subjectTokenType: \LumoAuth\Resource\Auth::ID_TOKEN_TYPE);
+        parse_str((string) $this->fake->last()->getBody(), $form);
+        self::assertSame('urn:ietf:params:oauth:token-type:id_token', $form['subject_token_type']);
+        self::assertSame('urn:ietf:params:oauth:token-type:access_token', $form['actor_token_type']);
+    }
+
     public function testAgentsRegisterAndCapabilities(): void
     {
         $lumo = $this->client();
