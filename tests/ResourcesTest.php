@@ -133,6 +133,19 @@ final class ResourcesTest extends TestCase
         parse_str((string) $this->fake->last()->getBody(), $form);
         self::assertSame('urn:ietf:params:oauth:token-type:id_token', $form['subject_token_type']);
         self::assertSame('urn:ietf:params:oauth:token-type:access_token', $form['actor_token_type']);
+        self::assertArrayNotHasKey('resource', $form, 'no resource unless asked');
+    }
+
+    public function testDelegationExchangeSendsTheResourceIndicator(): void
+    {
+        $lumo = $this->client();
+        $this->fake->queue(200, ['access_token' => 'delegated']);
+
+        $lumo->delegation->exchange('user-token', 'agent-token', ['read'], resource: 'https://api.example.com');
+        parse_str((string) $this->fake->last()->getBody(), $form);
+        self::assertSame('https://api.example.com', $form['resource']);
+        self::assertSame('agent-token', $form['actor_token']);
+        self::assertSame('read', $form['scope']);
     }
 
     public function testAgentsRegisterAndCapabilities(): void

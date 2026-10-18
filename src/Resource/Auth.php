@@ -17,8 +17,10 @@ final class Auth
      * with invalid_grant. ACCESS_TOKEN_TYPE (default): an opaque or at+jwt access token;
      * JWT_TOKEN_TYPE: an at+jwt access token or an external workload identity token;
      * ID_TOKEN_TYPE: an OpenID Connect ID token issued to the exchanging client;
-     * REFRESH_TOKEN_TYPE: a refresh token issued to the exchanging client. JIT permission
-     * tokens, logout tokens and other special-purpose JWTs are never accepted under any type.
+     * REFRESH_TOKEN_TYPE: a refresh token issued to the exchanging client (refused as the
+     * subject when an agent acts on a user's behalf, i.e. the actor token is an agent access
+     * token: 400 invalid_request). JIT permission tokens, logout tokens and other
+     * special-purpose JWTs are never accepted under any type.
      */
     public const ACCESS_TOKEN_TYPE = 'urn:ietf:params:oauth:token-type:access_token';
     public const JWT_TOKEN_TYPE = 'urn:ietf:params:oauth:token-type:jwt';
@@ -106,6 +108,9 @@ final class Auth
     /**
      * RFC 8693 token exchange. $subjectTokenType / $actorTokenType declare what kind of
      * token is being exchanged (one of the *_TOKEN_TYPE constants, default ACCESS_TOKEN_TYPE).
+     * $resource (RFC 8707: the absolute https URL of the API) becomes the issued token's `aud`;
+     * without it an agent on-behalf-of token is bound to the acting agent's id. $audience is
+     * sent as the RFC 8693 parameter, but LumoAuth binds `aud` from $resource only.
      *
      * @param list<string>|null $scopes @return array<string, mixed>
      */
@@ -116,6 +121,7 @@ final class Auth
         ?array $scopes = null,
         string $subjectTokenType = self::ACCESS_TOKEN_TYPE,
         string $actorTokenType = self::ACCESS_TOKEN_TYPE,
+        ?string $resource = null,
     ): array {
         $data = ['grant_type' => self::TOKEN_EXCHANGE_GRANT, 'subject_token' => $subjectToken, 'subject_token_type' => $subjectTokenType];
         if ($actorToken) {
@@ -124,6 +130,9 @@ final class Auth
         }
         if ($audience) {
             $data['audience'] = $audience;
+        }
+        if ($resource) {
+            $data['resource'] = $resource;
         }
         if ($scopes) {
             $data['scope'] = implode(' ', $scopes);

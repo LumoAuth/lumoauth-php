@@ -37,10 +37,15 @@ final class Delegation
         return $this->auth->refreshToken($refreshToken, $clientId, $clientSecret);
     }
 
-    /** The delegated JWT carries an `act` claim recording the chain. @param list<string>|null $scopes @return array<string, mixed> */
-    public function exchange(string $subjectToken, string $actorToken, ?array $scopes = null): array
+    /**
+     * The delegated JWT carries an `act` claim recording the chain. $resource (RFC 8707 https
+     * URL) becomes its `aud`; without it the token is bound to the acting agent.
+     *
+     * @param list<string>|null $scopes @return array<string, mixed>
+     */
+    public function exchange(string $subjectToken, string $actorToken, ?array $scopes = null, ?string $resource = null): array
     {
-        return $this->auth->tokenExchange($subjectToken, actorToken: $actorToken, scopes: $scopes);
+        return $this->auth->tokenExchange($subjectToken, actorToken: $actorToken, scopes: $scopes, resource: $resource);
     }
 
     public function revoke(string $token, string $tokenTypeHint = 'refresh_token', ?string $clientId = null, ?string $clientSecret = null): mixed

@@ -28,13 +28,13 @@ $lumo = new LumoAuth(tokenProvider: fn () => $session->get('access_token'));
 |---|---|
 | `permissions` | `$lumo->permissions->check('document.edit')`, `checkAny([...])`, `checkBulk([...])`, `listSlugs()` |
 | `zanzibar` | `$lumo->zanzibar->isOwner('document:1', 'user:alice')`, `expand('document:1', 'viewer')` |
-| `abac` | `$lumo->abac->isAllowed('document', 'read', 'd1', ['ip' => …])`, `setUserAttribute(...)` |
+| `abac` | `$lumo->abac->isAllowed('document', 'read', 'd1', ['pep' => ['ip' => …]])` (`ip`, `userAgent`, `requestMethod`, `requestPath` describe the request LumoAuth received; forwarded end-user values go under `pep`), `setUserAttribute(...)` |
 | `agents` | `$lumo->agents->ask('send_email', $ctx)`, `me()`, `register(...)`, `capabilities()` |
 | `approvals` | `$lumo->approvals->require(taskId: …, reason: …, onBehalfOf: …)->isApproved()` |
 | `jit` | `$lumo->jit->createTask(...)`, `request($taskId, $authorizationDetails)`, `token($requestId)` |
 | `mcp` | `$lumo->mcp->getToken('urn:mcp:finance')` |
-| `delegation` | `$lumo->delegation->exchange($subjectToken, $actorToken)`, `Delegation::parseActorChain($jwt)` |
-| `auth` | `$lumo->auth->authorizationUrl(...)`, `exchangeCode(...)`, `clientCredentials(...)`, `tokenExchange($subjectToken, ..., subjectTokenType: Auth::ACCESS_TOKEN_TYPE, actorTokenType: Auth::ACCESS_TOKEN_TYPE)`, `userinfo()`. The RFC 8693 types are `Auth::ACCESS_TOKEN_TYPE` (default), `Auth::JWT_TOKEN_TYPE` (at+jwt access token or external workload JWT), `Auth::ID_TOKEN_TYPE` (OpenID Connect ID token) and `Auth::REFRESH_TOKEN_TYPE`; the server refuses a token that does not match its declared type. |
+| `delegation` | `$lumo->delegation->exchange($subjectToken, $actorToken, resource: 'https://api.example.com')`, `Delegation::parseActorChain($jwt)` |
+| `auth` | `$lumo->auth->authorizationUrl(...)`, `exchangeCode(...)`, `clientCredentials(...)`, `tokenExchange($subjectToken, ..., subjectTokenType: Auth::ACCESS_TOKEN_TYPE, actorTokenType: Auth::ACCESS_TOKEN_TYPE, resource: null)`, `userinfo()`. The RFC 8693 types are `Auth::ACCESS_TOKEN_TYPE` (default), `Auth::JWT_TOKEN_TYPE` (at+jwt access token or external workload JWT), `Auth::ID_TOKEN_TYPE` (OpenID Connect ID token) and `Auth::REFRESH_TOKEN_TYPE` (not accepted as the subject when an agent acts on a user's behalf); the server refuses a token that does not match its declared type. `resource` (RFC 8707 https URL) becomes the token's `aud`; LumoAuth does not bind `aud` from `audience`. |
 
 ## Errors
 
