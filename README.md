@@ -85,12 +85,12 @@ users in and list their permissions, request `authz:read` together with `openid 
 | `permissions` | `check('document.edit')`, `check('document.edit', userId: $sub)`, `checkAny([...])`, `checkAll([...])`, `checkBulk([...])`, `listSlugs()` |
 | `zanzibar` | `check('document:1', 'viewer', 'user:bob')`, `isOwner(...)`, `expand('document:1', 'viewer')` |
 | `abac` | `isAllowed('document', 'read', 'd1', ['pep' => ['ip' => $ip]])`, `checkBulk([...], $environment)`, `myAttributes()`, `setUserAttribute(...)` |
-| `agents` | `ask('send_email', $ctx)`, `isAllowed(...)`, `me()`, `capabilities()`, `budget()`, `register(...)` |
+| `agents` | `ask('send_email', $ctx)`, `isAllowed(...)`, `me()`, `capabilities()`, `budget()`, `register(...)`, `authorizeMcpTool($serverId, $tool)` |
 | `approvals` | `require(taskId: …, reason: …, onBehalfOf: …)->isApproved()`, `create()`, `status()`, `wait()` |
 | `jit` | `createTask(...)`, `request($taskId, $authorizationDetails)`, `status($id)`, `token($id)`, `completeTask($taskId)` |
 | `auth` | `authorizationUrl(...)`, `exchangeCode(...)`, `refreshToken(...)`, `clientCredentials(...)`, `tokenExchange(...)`, `revoke(...)`, `userinfo()` |
 | `delegation` | `exchange($subjectToken, $actorToken, resource: 'https://api.example.com')`, `Delegation::parseActorChain($jwt)` |
-| `mcp` | `getToken('https://mcp.example.com/mcp')` |
+| `mcp` | `getToken('https://mcp.example.com/mcp')`, `authorizeTool(serverId: 'mcp_…', subjectType: 'user', subjectId: $sub, tool: 'search')` |
 
 **Checks about another subject.** The permission checks take `userId:` (the LumoAuth user
 ID, a UUID: the `sub` of the user's tokens) or `agentId:` (an `agt_…` ID). The SDK sends
@@ -116,7 +116,16 @@ from `audience`.
 **MCP tokens.** `mcp->getToken($serverId)` sends the server ID as `resource`, so the token's
 `aud` names the MCP server. The server ID must be the MCP server's https URL, such as
 `https://mcp.example.com/mcp`. Any other value, such as `urn:mcp:finance`, throws
-`LumoAuthValidationError` before a request is sent.
+`LumoAuthValidationError` before a request is sent. The token works only at that one MCP
+server, and LumoAuth's own API rejects it. A server that requires DPoP needs a DPoP-bound
+exchange.
+
+**MCP tool checks.** An MCP server calls `mcp->authorizeTool()` with its own client
+credentials token (scope `mcp:authorize`). It never forwards the caller's token. It
+passes the `sub` of the verified MCP token as the subject. An agent can ask about itself
+with `agents->authorizeMcpTool($serverId, $tool)`. `$serverId` is the registered `mcp_…`
+ID. When LumoAuth denies the tool, both methods return a decision with `allowed` set to
+`false` and do not throw.
 
 ## Agents
 

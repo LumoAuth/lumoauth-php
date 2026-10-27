@@ -49,6 +49,27 @@ final class Agents
         return (array) $this->http->call(Routes::AGENTS_ME);
     }
 
+    /**
+     * Ask whether this agent may run one tool on a registered MCP server. Call it with
+     * the agent's own credential (an agent access token or an `agk_` key).
+     *
+     * A 403 whose body has `"allowed": false` is a deny decision: the method returns it
+     * with `allowed` false and does not throw. Other errors throw as usual. An unknown
+     * or inactive server throws LumoAuthNotFoundError (`unknown_server`).
+     *
+     * @param string $serverId the registered MCP server ID (`mcp_…`), not the resource URI
+     * @param string $tool     the tool name, at most 80 characters, without `/`, `:`, `#` or `*`
+     *
+     * @throws \LumoAuth\Error\LumoAuthValidationError before any request when an argument is invalid
+     */
+    public function authorizeMcpTool(string $serverId, string $tool): AgentMcpToolDecision
+    {
+        Mcp::assertServerAndTool($serverId, $tool);
+        $body = $this->http->callDecision(Routes::AGENTS_AUTHORIZE_MCP_TOOL, [], ['server_id' => $serverId, 'tool' => $tool]);
+
+        return AgentMcpToolDecision::fromArray($body, $serverId, $tool);
+    }
+
     /** @param list<string>|null $capabilities @return array<string, mixed> */
     public function register(string $name, string $clientId, ?string $description = null, ?array $capabilities = null, ?string $jwksUri = null): array
     {

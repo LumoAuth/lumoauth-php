@@ -129,6 +129,31 @@ final class HttpClient
     }
 
     /**
+     * Invoke a decision route: a 2xx body is returned, and so is a 403 whose JSON body
+     * carries `"allowed": false`, because that 403 is a deny decision and not an error.
+     * Every other status goes through the normal error mapping.
+     *
+     * @param array<string, string|int> $pathParams
+     * @param array<string, mixed> $json
+     * @return array<string, mixed>
+     */
+    public function callDecision(string $route, array $pathParams, array $json): array
+    {
+        [$method, $path] = $this->route($route, $pathParams);
+        /** @var ResponseInterface $response */
+        $response = $this->request($method, $path, $json, raw: true);
+        if ($response->getStatusCode() === 403) {
+            $body = self::parseBody($response);
+            if (is_array($body) && array_key_exists('allowed', $body) && $body['allowed'] === false) {
+                return $body;
+            }
+        }
+        $body = $this->handle($response);
+
+        return is_array($body) ? $body : [];
+    }
+
+    /**
      * Send a request to a path (joined to the base URL) or a full URL.
      * With `$raw` the PSR-7 response is returned without status mapping
      * (transport errors are still wrapped).

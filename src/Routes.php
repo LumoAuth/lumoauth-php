@@ -33,6 +33,7 @@ final class Routes
     public const ABAC_SET_USER_ATTRIBUTE = 'abac.setUserAttribute';
     // ── agents: Agent identity: Ask API, self-info, registration
     public const AGENTS_ASK = 'agents.ask';
+    public const AGENTS_AUTHORIZE_MCP_TOOL = 'agents.authorizeMcpTool';
     public const AGENTS_ME = 'agents.me';
     public const AGENTS_REGISTER = 'agents.register';
     // ── approvals: Push approval for actions
@@ -53,6 +54,8 @@ final class Routes
     public const JIT_REQUEST = 'jit.request';
     public const JIT_REQUEST_STATUS = 'jit.requestStatus';
     public const JIT_TOKEN = 'jit.token';
+    // ── mcp: MCP: token exchange for one MCP server (built on oauth.token) and the per-tool check that an MCP server asks with its own client-credentials token
+    public const MCP_AUTHORIZE_TOOL = 'mcp.authorizeTool';
     // ── permissions: RBAC permission checks (bearer-scoped, org inferred from the credential)
     public const PERMISSIONS_CHECK = 'permissions.check';
     public const PERMISSIONS_CHECK_ALL = 'permissions.checkAll';
@@ -83,6 +86,7 @@ final class Routes
         'abac.setResourceAttribute' => ['PUT', '/orgs/{orgId}/api/v1/abac/resources/{resourceType}/{resourceId}/attributes/{attributeSlug}'],
         'abac.setUserAttribute' => ['PUT', '/orgs/{orgId}/api/v1/abac/users/{userId}/attributes/{attributeSlug}'],
         'agents.ask' => ['POST', '/orgs/{orgId}/api/v1/agents/ask'],
+        'agents.authorizeMcpTool' => ['POST', '/orgs/{orgId}/api/v1/agents/me/mcp/authorize'],
         'agents.me' => ['GET', '/orgs/{orgId}/api/v1/agents/me'],
         'agents.register' => ['POST', '/orgs/{orgId}/api/v1/agents/register'],
         'approvals.create' => ['POST', '/orgs/{orgId}/api/v1/agents/me/approvals'],
@@ -100,6 +104,7 @@ final class Routes
         'jit.request' => ['POST', '/orgs/{orgId}/api/v1/jit/request'],
         'jit.requestStatus' => ['GET', '/orgs/{orgId}/api/v1/jit/request/{requestId}/status'],
         'jit.token' => ['POST', '/orgs/{orgId}/api/v1/jit/request/{requestId}/token'],
+        'mcp.authorizeTool' => ['POST', '/orgs/{orgId}/api/v1/mcp/servers/{serverId}/tools/authorize'],
         'permissions.check' => ['POST', '/api/v1/authz/check'],
         'permissions.checkAll' => ['POST', '/api/v1/authz/check-all'],
         'permissions.checkAny' => ['POST', '/api/v1/authz/check-any'],
