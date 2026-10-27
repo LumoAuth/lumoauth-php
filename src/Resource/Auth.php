@@ -20,7 +20,8 @@ final class Auth
      * REFRESH_TOKEN_TYPE: a refresh token issued to the exchanging client (refused as the
      * subject when an agent acts on a user's behalf, i.e. the actor token is an agent access
      * token: 400 invalid_request). JIT permission tokens, logout tokens and other
-     * special-purpose JWTs are never accepted under any type.
+     * special-purpose JWTs are never accepted under any type. The subject must still be
+     * an active principal: a deactivated or blocked user, or a suspended agent, is invalid_grant.
      */
     public const ACCESS_TOKEN_TYPE = 'urn:ietf:params:oauth:token-type:access_token';
     public const JWT_TOKEN_TYPE = 'urn:ietf:params:oauth:token-type:jwt';

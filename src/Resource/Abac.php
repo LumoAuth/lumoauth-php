@@ -12,6 +12,14 @@ use LumoAuth\Routes;
  * Attribute-based checks and attribute management. Org-scoped: the client
  * needs an orgId. Wire bodies use camelCase keys (`resourceType`,
  * `resourceId`); snake_case keys in bulk requests are translated.
+ *
+ * The `$context` that you pass is sent as the ABAC `environment`. The keys `ip`,
+ * `userAgent`, `requestMethod` and `requestPath` always describe the request that
+ * LumoAuth received; values that you pass under those names are kept under `pep`.
+ *
+ * A user access token needs the `abac:read` scope for checks and attribute reads,
+ * and `abac:write` to set attributes. Organization API keys are not accepted on
+ * these routes.
  */
 final class Abac
 {
@@ -20,8 +28,9 @@ final class Abac
     }
 
     /**
-     * @param array<string, mixed>|null $context
-     * @return array<string, mixed> the full decision (`allowed`, `reason`, `matchedPolicies`, …)
+     * @param array<string, mixed>|null $context sent as the ABAC `environment`
+     * @return array<string, mixed> the full decision (`allowed`, `reason`, `matchedPolicies`, `user_id`, …).
+     *         A caller without the `policies.view` permission gets only `id` and `name` for each matched policy.
      */
     public function check(string $resourceType, string $action, ?string $resourceId = null, ?array $context = null): array
     {
@@ -36,7 +45,8 @@ final class Abac
             $body['resourceId'] = $resourceId;
         }
         if ($context) {
-            $body['context'] = $context;
+            // The server reads `environment`; a `context` key would be ignored.
+            $body['environment'] = $context;
         }
 
         return (array) $this->http->call(Routes::ABAC_CHECK, json: $body);
@@ -49,24 +59,66 @@ final class Abac
     }
 
     /**
+     * Evaluate up to 100 checks in one call. Each entry has `resourceType` (or
+     * `resource_type`), `action` and an optional `resourceId` (or `resource_id`).
+     *
+     * The server applies ONE environment to every check in a bulk call. Pass it as
+     * `$environment`. Entries may instead carry `context` (or `environment`), but then
+     * every entry must carry the same value, and it must match `$environment` when you
+     * pass both. Otherwise this throws LumoAuthValidationError.
+     *
      * @param list<array<string, mixed>> $requests
-     * @return array<string, mixed>
+     * @param array<string, mixed>|null $environment shared ABAC environment for every check
+     * @return array<string, mixed> `results` (each with `index`, `resourceType`, `action`,
+     *         `resourceId`, `allowed`, `reason` and an optional `error`) and `user_id`
      */
-    public function checkBulk(array $requests): array
+    public function checkBulk(array $requests, ?array $environment = null): array
     {
         if ($requests === []) {
             throw new LumoAuthValidationError('At least one check request is required.');
         }
+        if (count($requests) > 100) {
+            throw new LumoAuthValidationError('At most 100 checks are allowed in one bulk call.');
+        }
         $wire = [];
+        $entryEnvironments = [];
         foreach ($requests as $item) {
             $entry = [];
+            $entryEnvironment = null;
             foreach ($item as $key => $value) {
+                if ($key === 'context' || $key === 'environment') {
+                    $entryEnvironment = ($value === null || $value === []) ? null : $value;
+                    continue;
+                }
                 $entry[match ($key) { 'resource_type' => 'resourceType', 'resource_id' => 'resourceId', default => $key }] = $value;
             }
             $wire[] = $entry;
+            $entryEnvironments[] = $entryEnvironment;
         }
 
-        return (array) $this->http->call(Routes::ABAC_CHECK_BULK, json: ['requests' => $wire]);
+        $shared = $environment === [] ? null : $environment;
+        $withEnvironment = array_values(array_filter($entryEnvironments, static fn ($e): bool => $e !== null));
+        if ($withEnvironment !== []) {
+            // Every entry must carry the same environment (and match $environment when given):
+            // an entry without one would silently be evaluated with the others' environment.
+            $first = $withEnvironment[0];
+            foreach ($entryEnvironments as $e) {
+                if ($e != $first) {
+                    throw new LumoAuthValidationError('The server applies one environment to every check in a bulk call; give every entry the same context, or pass it once as $environment.');
+                }
+            }
+            if ($shared !== null && $shared != $first) {
+                throw new LumoAuthValidationError('The server applies one environment to every check in a bulk call; the entry context differs from $environment.');
+            }
+            $shared = $first;
+        }
+
+        $body = ['checks' => $wire];
+        if ($shared !== null) {
+            $body['environment'] = $shared;
+        }
+
+        return (array) $this->http->call(Routes::ABAC_CHECK_BULK, json: $body);
     }
 
     /** @return array<string, mixed> */

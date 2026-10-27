@@ -73,14 +73,20 @@ final class Jit
         return (array) $this->http->call(Routes::JIT_TOKEN, ['requestId' => $requestId]);
     }
 
-    /** @return list<array<string, mixed>> */
+    /** Requests waiting for a human reviewer. Needs a browser session or a user access token with the `jit:approve` scope. @return list<array<string, mixed>> */
     public function pending(): array
     {
-        $data = $this->http->call(Routes::JIT_PENDING);
-        if (is_array($data) && array_key_exists('requests', $data)) {
-            return is_array($data['requests']) ? array_values($data['requests']) : [];
+        // Reply: {"pending_requests": [...], "count": n, "data": [...], "pagination": {...}}
+        $reply = $this->http->call(Routes::JIT_PENDING);
+        if (!is_array($reply)) {
+            return [];
+        }
+        foreach (['data', 'pending_requests'] as $key) {
+            if (isset($reply[$key]) && is_array($reply[$key])) {
+                return array_values($reply[$key]);
+            }
         }
 
-        return is_array($data) ? array_values($data) : [];
+        return [];
     }
 }

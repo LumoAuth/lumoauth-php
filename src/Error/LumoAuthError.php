@@ -11,7 +11,7 @@ namespace LumoAuth\Error;
  *   LumoAuthError                              LUMOAUTH_ERROR
  *   ├── LumoAuthApiError                       API_ERROR (any 4xx/5xx)
  *   │   ├── LumoAuthAuthenticationError        AUTHENTICATION_ERROR (401)
- *   │   ├── LumoAuthPermissionDeniedError      PERMISSION_DENIED (403)
+ *   │   ├── LumoAuthPermissionDeniedError      PERMISSION_DENIED (403, requiredScopes)
  *   │   ├── LumoAuthNotFoundError              NOT_FOUND (404)
  *   │   └── LumoAuthRateLimitError             RATE_LIMITED (429)
  *   ├── LumoAuthValidationError                VALIDATION_ERROR
@@ -19,6 +19,7 @@ namespace LumoAuth\Error;
  *   ├── LumoAuthNetworkError                   NETWORK_ERROR
  *   ├── LumoAuthApprovalDeniedError            APPROVAL_DENIED
  *   ├── LumoAuthApprovalTimeoutError           APPROVAL_TIMEOUT
+ *   ├── LumoAuthApprovalNotDeliveredError      APPROVAL_NOT_DELIVERED (202 email fallback / 428; $reason)
  *   └── LumoAuthBudgetExceededError            BUDGET_EXCEEDED
  */
 class LumoAuthError extends \RuntimeException

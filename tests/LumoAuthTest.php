@@ -56,6 +56,6 @@ final class LumoAuthTest extends TestCase
         $lumo->permissions->check('x');
         $lumo->agents->isAllowed('y');
         self::assertCount(2, $this->fake->requests);
-        self::assertSame(LumoAuth::VERSION, '0.1.0');
+        self::assertSame('1.0.1', LumoAuth::VERSION);
     }
 }

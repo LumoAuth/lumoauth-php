@@ -14,7 +14,13 @@ final class Agents
     {
     }
 
-    /** @param array<string, mixed>|null $context @return array<string, mixed> `allowed`, `action`, `reason`, `audit_id`, … */
+    /**
+     * Ask whether the caller may perform $action. In $context, `ip`, `userAgent`,
+     * `requestMethod` and `requestPath` always describe the request LumoAuth received;
+     * values you pass under those names are kept under `pep` (the same rule as ABAC).
+     *
+     * @param array<string, mixed>|null $context @return array<string, mixed> `allowed`, `action`, `reason`, `audit_id`, …
+     */
     public function ask(string $action, ?array $context = null): array
     {
         $body = ['action' => $action];
@@ -31,7 +37,13 @@ final class Agents
         return (bool) ($this->ask($action, $context)['allowed'] ?? false);
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * The caller's identity, capabilities and workspace. For an agent credential,
+     * `capabilities` are the agent's capability roles. A user access token without
+     * the `authz:read` scope gets an empty `capabilities` list.
+     *
+     * @return array<string, mixed>
+     */
     public function me(): array
     {
         return (array) $this->http->call(Routes::AGENTS_ME);

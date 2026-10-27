@@ -113,6 +113,21 @@ final class HttpClientTest extends TestCase
         }
     }
 
+    public function testScopeRefusalExposesRequiredScopes(): void
+    {
+        $body = ['error' => 'forbidden', 'message' => 'Insufficient scope: this API key is missing a required scope', 'status' => 403,
+            'details' => ['required_scopes' => ['authz:read'], 'granted_scopes' => ['admin:users:read'], 'key_scopes' => ['admin:users:read']]];
+        $this->fake->queue(403, $body)->queue(403, ['error' => 'nope']);
+        foreach ([['authz:read'], []] as $expected) {
+            try {
+                $this->client()->http()->call(Routes::PERMISSIONS_LIST);
+                self::fail('expected 403');
+            } catch (LumoAuthPermissionDeniedError $e) {
+                self::assertSame($expected, $e->requiredScopes);
+            }
+        }
+    }
+
     public function testRateLimitReadsRetryAfter(): void
     {
         $this->fake->queue(429, ['error' => 'rate_limited'], ['Retry-After' => '7']);
