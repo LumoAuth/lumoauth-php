@@ -39,7 +39,7 @@ use Psr\Http\Message\StreamFactoryInterface;
 final class LumoAuth
 {
     public const DEFAULT_BASE_URL = 'https://app.lumoauth.dev';
-    public const VERSION = '1.0.1';
+    public const VERSION = '1.2.0';
 
     public readonly string $baseUrl;
     public readonly ?string $orgId;
