@@ -56,6 +56,7 @@ final class LumoAuthTest extends TestCase
         $lumo->permissions->check('x');
         $lumo->agents->isAllowed('y');
         self::assertCount(2, $this->fake->requests);
-        self::assertSame('1.0.1', LumoAuth::VERSION);
+        // The release tool sets and checks the exact value; pinning it here breaks every bump.
+        self::assertMatchesRegularExpression('/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/', LumoAuth::VERSION);
     }
 }
