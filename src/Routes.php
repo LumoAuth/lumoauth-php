@@ -35,6 +35,7 @@ final class Routes
     public const AGENTS_ASK = 'agents.ask';
     public const AGENTS_AUTHORIZE_MCP_TOOL = 'agents.authorizeMcpTool';
     public const AGENTS_ME = 'agents.me';
+    public const AGENTS_REPORT_USAGE = 'agents.reportUsage';
     public const AGENTS_REGISTER = 'agents.register';
     // ── approvals: Push approval for actions
     public const APPROVALS_CREATE = 'approvals.create';
@@ -88,6 +89,7 @@ final class Routes
         'agents.ask' => ['POST', '/orgs/{orgId}/api/v1/agents/ask'],
         'agents.authorizeMcpTool' => ['POST', '/orgs/{orgId}/api/v1/agents/me/mcp/authorize'],
         'agents.me' => ['GET', '/orgs/{orgId}/api/v1/agents/me'],
+        'agents.reportUsage' => ['POST', '/orgs/{orgId}/api/v1/agents/me/usage'],
         'agents.register' => ['POST', '/orgs/{orgId}/api/v1/agents/register'],
         'approvals.create' => ['POST', '/orgs/{orgId}/api/v1/agents/me/approvals'],
         'approvals.status' => ['GET', '/orgs/{orgId}/api/v1/agents/me/approvals/{token}/status'],

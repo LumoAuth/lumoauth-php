@@ -85,7 +85,7 @@ users in and list their permissions, request `authz:read` together with `openid 
 | `permissions` | `check('document.edit')`, `check('document.edit', userId: $sub)`, `checkAny([...])`, `checkAll([...])`, `checkBulk([...])`, `listSlugs()` |
 | `zanzibar` | `check('document:1', 'viewer', 'user:bob')`, `isOwner(...)`, `expand('document:1', 'viewer')` |
 | `abac` | `isAllowed('document', 'read', 'd1', ['pep' => ['ip' => $ip]])`, `checkBulk([...], $environment)`, `myAttributes()`, `setUserAttribute(...)` |
-| `agents` | `ask('send_email', $ctx)`, `isAllowed(...)`, `me()`, `capabilities()`, `budget()`, `register(...)`, `authorizeMcpTool($serverId, $tool)` |
+| `agents` | `ask('send_email', $ctx)`, `isAllowed(...)`, `me()`, `capabilities()`, `budget()`, `reportUsage($tokens, $costUsd)`, `register(...)`, `authorizeMcpTool($serverId, $tool)` |
 | `approvals` | `require(taskId: …, reason: …, onBehalfOf: …)->isApproved()`, `create()`, `status()`, `wait()` |
 | `jit` | `createTask(...)`, `request($taskId, $authorizationDetails)`, `status($id)`, `token($id)`, `completeTask($taskId)` |
 | `auth` | `authorizationUrl(...)`, `exchangeCode(...)`, `refreshToken(...)`, `clientCredentials(...)`, `tokenExchange(...)`, `revoke(...)`, `userinfo()` |

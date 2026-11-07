@@ -299,6 +299,26 @@ final class ResourcesTest extends TestCase
         self::assertSame(['read:docs'], $lumo->agents->capabilities());
     }
 
+    public function testAgentsReportUsage(): void
+    {
+        $lumo = $this->client();
+        $this->fake->queue(200, ['recorded' => ['tokens' => 1000, 'cost_usd' => 0.02], 'budget' => ['tokens_used_today' => 1000, 'exhausted' => true]]);
+        $result = $lumo->agents->reportUsage(1000, 0.02);
+        self::assertSame('POST', $this->fake->last()->getMethod());
+        self::assertStringEndsWith('/orgs/acme-corp/api/v1/agents/me/usage', (string) $this->fake->last()->getUri());
+        self::assertSame(['tokens' => 1000, 'cost_usd' => 0.02], $this->fake->lastJson());
+        self::assertTrue($result['budget']['exhausted']);
+
+        foreach ([[-1, 0.0], [0, 0.0], [0, -0.5]] as [$tokens, $cost]) {
+            try {
+                $lumo->agents->reportUsage($tokens, $cost);
+                self::fail("reportUsage($tokens, $cost) should be refused");
+            } catch (\LumoAuth\Error\LumoAuthValidationError) {
+                // expected
+            }
+        }
+    }
+
     public function testDelegationChainParsing(): void
     {
         $payload = static fn (array $claims): string => 'h.' . rtrim(strtr(base64_encode(json_encode($claims)), '+/', '-_'), '=') . '.s';

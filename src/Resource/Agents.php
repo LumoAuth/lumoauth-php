@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace LumoAuth\Resource;
 
+use LumoAuth\Error\LumoAuthValidationError;
 use LumoAuth\Http\HttpClient;
 use LumoAuth\Routes;
 
@@ -29,6 +30,33 @@ final class Agents
         }
 
         return (array) $this->http->call(Routes::AGENTS_ASK, json: $body);
+    }
+
+    /**
+     * Report the model tokens and cost that the agent used.
+     *
+     * LumoAuth does not see the agent's model calls, so token and cost limits
+     * (`max_tokens_per_day`, `max_cost_per_month_usd`, …) count only the usage
+     * reported here. Report after each model call, or batch a few. The report
+     * is not a metered call and is accepted when the budget is spent;
+     * `$result['budget']['exhausted']` says whether it is. Agent credentials only.
+     *
+     * @return array{recorded: array{tokens: int, cost_usd: float}, budget: array<string, mixed>}
+     */
+    public function reportUsage(int $tokens = 0, float $costUsd = 0.0): array
+    {
+        if ($tokens < 0) {
+            throw new LumoAuthValidationError('tokens must not be negative.');
+        }
+        if ($costUsd < 0 || !is_finite($costUsd)) {
+            throw new LumoAuthValidationError('costUsd must be a non-negative number.');
+        }
+        if ($tokens === 0 && $costUsd === 0.0) {
+            throw new LumoAuthValidationError('Report tokens or costUsd greater than zero.');
+        }
+
+        /** @var array{recorded: array{tokens: int, cost_usd: float}, budget: array<string, mixed>} */
+        return (array) $this->http->call(Routes::AGENTS_REPORT_USAGE, json: ['tokens' => $tokens, 'cost_usd' => $costUsd]);
     }
 
     /** @param array<string, mixed>|null $context */
