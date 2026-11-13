@@ -63,7 +63,7 @@ final class Routes
     public const PERMISSIONS_CHECK_ANY = 'permissions.checkAny';
     public const PERMISSIONS_CHECK_BULK = 'permissions.checkBulk';
     public const PERMISSIONS_LIST = 'permissions.list';
-    // ── webauth: Browser sign-in helpers served by the web firewall
+    // ── webauth: Sign-in helpers for applications that render their own sign-in form
     public const WEB_CHECK_EMAIL = 'web.checkEmail';
     public const WEB_MAGIC_LINK = 'web.magicLink';
     // ── zanzibar: Relationship-based checks and expansion
@@ -113,7 +113,7 @@ final class Routes
         'permissions.checkBulk' => ['POST', '/api/v1/authz/check-bulk'],
         'permissions.list' => ['GET', '/api/v1/authz/permissions'],
         'web.checkEmail' => ['POST', '/orgs/{orgId}/check-email'],
-        'web.magicLink' => ['POST', '/orgs/{orgId}/magic-link'],
+        'web.magicLink' => ['POST', '/orgs/{orgId}/api/v1/oauth/magic-link'],
         'zanzibar.check' => ['POST', '/api/v1/authz/zanzibar/check'],
         'zanzibar.expand' => ['POST', '/api/v1/authz/zanzibar/expand'],
     ];
